@@ -1,87 +1,89 @@
-const cityInput = document.querySelector("#city-input");
-const searchButton = document.querySelector("#search-btn");
-const currentWeatherDiv = document.querySelector(".current-weather");
-const daysForecastDiv = document.querySelector(".days-forecast");
+const apiKey = '8630fb95500e3ec17c899db66db71cd1';
+const searchInput = document.getElementById('search');
+const weatherInfo = document.getElementById('weatherInfo');
+const updateCounter = document.getElementById('updateCounter');
 
-const API_KEY = "8630fb95500e3ec17c899db66db71cd1"; // Paste your API here
+let secondsRemaining = 60; // Time in seconds before the next update, changed to 60 seconds
+let userLanguage = getUserLanguage();
 
-// Create weather card HTML based on weather data
-const createWeatherCard = (cityName, weatherItem, index) => {
-    if(index === 0) {
-        return `<div class="mt-3 d-flex justify-content-between">
-                    <div>
-                        <h3 class="fw-bold">${cityName} (${weatherItem.dt_txt.split(" ")[0]})</h3>
-                        <h6 class="my-3 mt-3">Temperature: ${((weatherItem.main.temp - 273.15).toFixed(2))}°C</h6>
-                        <h6 class="my-3">Wind: ${weatherItem.wind.speed} M/S</h6>
-                        <h6 class="my-3">Humidity: ${weatherItem.main.humidity}%</h6>
-                    </div>
-                    <div class="text-center me-lg-5">
-                        <img src="https://openweathermap.org/img/wn/${weatherItem.weather[0].icon}@4x.png" alt="weather icon">
-                        <h6>${weatherItem.weather[0].description}</h6>
-                    </div>
-                </div>`;
-    } else {
-        return `<div class="col mb-3">
-                    <div class="card border-0 bg-secondary text-white">
-                        <div class="card-body p-3 text-white">
-                            <h5 class="card-title fw-semibold">(${weatherItem.dt_txt.split(" ")[0]})</h5>
-                            <img src="https://openweathermap.org/img/wn/${weatherItem.weather[0].icon}.png" alt="weather icon">
-                            <h6 class="card-text my-3 mt-3">Temp: ${((weatherItem.main.temp - 273.15).toFixed(2))}°C</h6>
-                            <h6 class="card-text my-3">Wind: ${weatherItem.wind.speed} M/S</h6>
-                            <h6 class="card-text my-3">Humidity: ${weatherItem.main.humidity}%</h6>
-                        </div>
-                    </div>
-                </div>`;
+function getUserLanguage() {
+    return navigator.language || 'en-US';
+}
+
+searchInput.addEventListener('keyup', (event) => {
+    if (event.key === 'Enter') {
+        zoekWeer();
     }
+});
+
+function zoekWeer() {
+    const stad = searchInput.value;
+
+    fetchWeather(stad);
+
+    startCounterInterval();
 }
 
-// Get weather details of passed latitude and longitude
-const getWeatherDetails = (cityName, latitude, longitude) => {
-    const WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
-
-    fetch(WEATHER_API_URL).then(response => response.json()).then(data => {
-        const forecastArray = data.list;
-        const uniqueForecastDays = new Set();
-
-        const fiveDaysForecast = forecastArray.filter(forecast => {
-            const forecastDate = new Date(forecast.dt_txt).getDate();
-            if (!uniqueForecastDays.has(forecastDate) && uniqueForecastDays.size < 6) {
-                uniqueForecastDays.add(forecastDate);
-                return true;
+function fetchWeather(stad) {
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${stad}&appid=${apiKey}&lang=${userLanguage}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network error or invalid city name');
             }
-            return false;
+            return response.json();
+        })
+        .then(data => {
+            const beschrijving = data.weather[0].description;
+            const temperatuur = (data.main.temp - 273.15); 
+            const gevoelsTemperatuur = (data.main.feels_like - 273.15);
+            const windsnelheid = data.wind.speed;
+            const windBeschrijving = getWindDescription(windsnelheid);
+
+            weatherInfo.innerHTML = `Het weer in ${stad}: ${beschrijving}. Temperatuur: ${temperatuur.toFixed(0)}°C. Gevoelstemperatuur: ${gevoelsTemperatuur.toFixed(0)}°C. Windsnelheid: ${windsnelheid} m/s (${windBeschrijving})`;
+        })
+        .catch(error => {
+            console.error(error);
+            weatherInfo.innerHTML = 'We konden geen weersinformatie vinden voor die stad.';
         });
-
-        cityInput.value = "";
-        currentWeatherDiv.innerHTML = "";
-        daysForecastDiv.innerHTML = "";
-
-        fiveDaysForecast.forEach((weatherItem, index) => {
-            const html = createWeatherCard(cityName, weatherItem, index);
-            if (index === 0) {
-                currentWeatherDiv.insertAdjacentHTML("beforeend", html);
-            } else {
-                daysForecastDiv.insertAdjacentHTML("beforeend", html);
-            }
-        });        
-    }).catch(() => {
-        alert("An error occurred while fetching the weather forecast!");
-    });
 }
 
-// Get coordinates of entered city name
-const getCityCoordinates = () => {
-    const cityName = cityInput.value.trim();
-    if (cityName === "") return;
-    const API_URL = `https://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=${API_KEY}`;
-  
-    fetch(API_URL).then(response => response.json()).then(data => {
-        if (!data.length) return alert(`No coordinates found for ${cityName}`);
-        const { lat, lon, name } = data[0];
-        getWeatherDetails(name, lat, lon);
-    }).catch(() => {
-        alert("An error occurred while fetching the coordinates!");
-    });
+function getWindDescription(windsnelheid) {
+    let windBeschrijving = "";
+    if (windsnelheid < 1) {
+        windBeschrijving = "Kalm";
+    } else if (windsnelheid < 5) {
+        windBeschrijving = "Lichte bries"; // Changed to "Lichte bries" in Dutch
+    } else if (windsnelheid < 10) {
+        windBeschrijving = "Matige bries";
+    } else {
+        windBeschrijving = "Sterke bries";
+    }
+
+    return windBeschrijving;
 }
 
-searchButton.addEventListener("click", () => getCityCoordinates());
+function updateCounterAndWeather() {
+    if (secondsRemaining === 0) {
+        const stad = searchInput.value;
+        fetchWeather(stad);
+        secondsRemaining = 60;
+    }
+
+    const minutes = Math.floor(secondsRemaining / 60);
+    const seconds = secondsRemaining % 60;
+
+    let counterText;
+    if (userLanguage === 'nl') {
+        counterText = `Volgende update over: ${minutes} minuten en ${seconds} seconden`;
+    } else {
+        counterText = `Next update in: ${minutes} minutes and ${seconds} seconds`;
+    }
+
+    updateCounter.innerText = counterText;
+    secondsRemaining--;
+}
+
+function startCounterInterval() {
+    updateCounterAndWeather();
+    setInterval(updateCounterAndWeather, 1000);
+}
