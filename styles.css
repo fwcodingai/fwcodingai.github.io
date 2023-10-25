@@ -2,58 +2,63 @@
 
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #212529;
-    color: #fff;
-    text-align: center;
-    margin: 0;
-    padding: 0;
+    achtergrondkleur: #212529;
+    kleur: #fff;
+    tekst-align: center;
+    marge: 0;
+    vulling: 0;
 }
 
 .container {
-    max-width: 400px;
-    margin: 0 auto;
-    background-color: #343a40;
-    padding: 20px;
+    max-breedte: 400px;
+    marge: 0 auto;
+    achtergrondkleur: #343a40;
+    vulling: 20px;
     border-radius: 15px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    doos-schaduw: 0 0 15px rgba(0, 0, 0, 0.2);
 }
 
 h1 {
-    font-size: 32px;
-    color: #ffc107;
-    margin-bottom: 20px;
+    lettergrootte: 32px;
+    kleur: #ffc107;
+    marge-onder: 20px;
 }
 
 .search-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    position: relative;
+    weergave: flex;
+    rechtvaardigen-inhoud: centrum;
+    uitlijnen-items: centrum;
+    flex-richting: kolom;
+    positie: relatief;
 }
 
 input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    border: 1px solid #6c757d;
-    background-color: #212529;
-    color: #fff;
+    breedte: 100%;
+    vulling: 10px;
+    marge-boven: 10px;
+    rand: 1px solide #6c757d;
+    achtergrondkleur: #212529;
+    kleur: #fff;
     border-radius: 5px;
-    font-size: 18px;
-    box-sizing: border-box; /* Toegevoegde eigenschap */
+    lettergrootte: 18px;
+    doos-sizing: border-box; /* Toegevoegde eigenschap */
 }
 
 .weather-info {
-    margin-top: 20px;
-    text-align: left;
-    font-size: 18px;
+    marge-boven: 20px;
+    tekst-align: links;
+    lettergrootte: 18px;
 }
 
-.update-counter {
-    margin-top: 10px;
-    font-size: 16px;
-    color: #888;
-    padding-top: 10px;
-    border-top: 1px solid #6c757d;
+update-counter {
+    marge-boven: 10px;
+    lettergrootte: 16px;
+    kleur: #888;
+    vulling-boven: 10px;
+    rand-boven: 1px solide #6c757d;
+}
+
+img {
+	weight: 10px;
+	height: 10px;
 }
