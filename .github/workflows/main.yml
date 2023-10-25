@@ -30,6 +30,7 @@ jobs:
     export API_KEY=$API_KEY  # Set the API key as an environment variable
     # Deploy your site to GitHub Pages
     # Example: npm run deploy or your deployment script
-  env:
+ env:
   API_KEY: ${{ secrets.API_KEY }}
+
 
