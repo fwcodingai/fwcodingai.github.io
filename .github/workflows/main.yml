@@ -31,5 +31,5 @@ jobs:
     # Deploy your site to GitHub Pages
     # Example: npm run deploy or your deployment script
   env:
-    API_KEY: ${{ secrets.API_KEY }}  # Access the API key from GitHub Secrets
+  API_KEY: ${{ secrets.API_KEY }}
 
