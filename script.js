@@ -1,58 +1,59 @@
 const apiKey = '8630fb95500e3ec17c899db66db71cd1';
-const searchInput = document.getElementById('search');
-const weatherInfo = document.getElementById('weatherInfo');
-const updateCounter = document.getElementById('updateCounter');
+const zoekInvoer = document.getElementById('search');
+const weerInfo = document.getElementById('weatherInfo');
+const updateTeller = document.getElementById('updateCounter');
 
-let secondsRemaining = 60; // Time in seconds before the next update, changed to 60 seconds
-let userLanguage = getUserLanguage();
+let secondenResterend = 60; // Tijd in seconden voor de volgende update, gewijzigd naar 60 seconden
 
-function getUserLanguage() {
-    return navigator.language || 'en-US';
+function krijgGebruikerstaal() {
+    return navigator.language || 'nl-NL';
 }
 
-searchInput.addEventListener('keyup', (event) => {
-    if (event.key === 'Enter') {
+zoekInvoer.addEventListener('keyup', (gebeurtenis) => {
+    if (gebeurtenis.key === 'Enter') {
         zoekWeer();
     }
 });
 
 function zoekWeer() {
-    const stad = searchInput.value;
+    const stad = zoekInvoer.value;
+    const gebruikerstaal = krijgGebruikerstaal();
 
-    fetchWeather(stad);
+    haalWeerOp(stad, gebruikerstaal);
 
-    startCounterInterval();
+    // We starten het tellerinterval pas wanneer een zoekopdracht wordt geïnitieerd.
+    startTellerInterval();
 }
 
-function fetchWeather(stad) {
-    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${stad}&appid=${apiKey}&lang=${userLanguage}`)
+function haalWeerOp(stad, gebruikerstaal) {
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${stad}&appid=${apiKey}&lang=${gebruikerstaal}`)
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network error or invalid city name');
+                throw new Error('Netwerkfout of ongeldige stadsnaam');
             }
             return response.json();
         })
         .then(data => {
             const beschrijving = data.weather[0].description;
-            const temperatuur = (data.main.temp - 273.15); 
-            const gevoelsTemperatuur = (data.main.feels_like - 273.15);
+            const temperatuur = (data.main.temp - 273.15); // Temperatuur in Celsius zonder decimalen
+            const gevoelsTemperatuur = (data.main.feels_like - 273.15); // Gevoelstemperatuur in Celsius zonder decimalen
             const windsnelheid = data.wind.speed;
-            const windBeschrijving = getWindDescription(windsnelheid);
+            const windBeschrijving = krijgWindBeschrijving(windsnelheid, gebruikerstaal);
 
-            weatherInfo.innerHTML = `Het weer in ${stad}: ${beschrijving}. Temperatuur: ${temperatuur.toFixed(0)}°C. Gevoelstemperatuur: ${gevoelsTemperatuur.toFixed(0)}°C. Windsnelheid: ${windsnelheid} m/s (${windBeschrijving})`;
+            weerInfo.innerHTML = `Het weer in ${stad}: ${beschrijving}. Temperatuur: ${temperatuur.toFixed(0)}°C. Gevoelstemperatuur: ${gevoelsTemperatuur.toFixed(0)}°C. Windsnelheid: ${windsnelheid} m/s (${windBeschrijving})`;
         })
         .catch(error => {
             console.error(error);
-            weatherInfo.innerHTML = 'We konden geen weersinformatie vinden voor die stad.';
+            weerInfo.innerHTML = 'We konden geen weerinformatie voor die stad vinden.';
         });
 }
 
-function getWindDescription(windsnelheid) {
+function krijgWindBeschrijving(windsnelheid, gebruikerstaal) {
     let windBeschrijving = "";
     if (windsnelheid < 1) {
-        windBeschrijving = "Kalm";
+        windBeschrijving = "Rustig";
     } else if (windsnelheid < 5) {
-        windBeschrijving = "Lichte bries"; // Changed to "Lichte bries" in Dutch
+        windBeschrijving = "Lichte bries";
     } else if (windsnelheid < 10) {
         windBeschrijving = "Matige bries";
     } else {
@@ -62,28 +63,18 @@ function getWindDescription(windsnelheid) {
     return windBeschrijving;
 }
 
-function updateCounterAndWeather() {
-    if (secondsRemaining === 0) {
-        const stad = searchInput.value;
-        fetchWeather(stad);
-        secondsRemaining = 60;
+function updateTellerEnWeer() {
+    if (secondenResterend === 0) {
+        const stad = zoekInvoer.value;
+        const gebruikerstaal = krijgGebruikerstaal();
+        haalWeerOp(stad, gebruikerstaal);
+        secondenResterend = 60; // Teller resetten naar 60 seconden
     }
-
-    const minutes = Math.floor(secondsRemaining / 60);
-    const seconds = secondsRemaining % 60;
-
-    let counterText;
-    if (userLanguage === 'nl') {
-        counterText = `Volgende update over: ${minutes} minuten en ${seconds} seconden`;
-    } else {
-        counterText = `Next update in: ${minutes} minutes and ${seconds} seconds`;
-    }
-
-    updateCounter.innerText = counterText;
-    secondsRemaining--;
+    updateTeller.innerText = `Volgende update over: ${Math.floor(secondenResterend / 60)} minuten en ${secondenResterend % 60} seconden`;
+    secondenResterend--;
 }
 
-function startCounterInterval() {
-    updateCounterAndWeather();
-    setInterval(updateCounterAndWeather, 1000);
+function startTellerInterval() {
+    updateTellerEnWeer();
+    setInterval(updateTellerEnWeer, 1000); // Gewijzigd om elke 1000 milliseconden (1 seconde) bij te werken
 }
