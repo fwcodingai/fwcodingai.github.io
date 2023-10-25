@@ -1,21 +1,20 @@
 const container = document.querySelector('.container');
 const search = document.querySelector('.search-box button');
+const searchInput = document.querySelector('.search-box input');
 const weatherBox = document.querySelector('.weather-box');
 const weatherDetails = document.querySelector('.weather-details');
 const error404 = document.querySelector('.not-found');
 
-search.addEventListener('click', () => {
-
+// Function to handle the search operation
+function searchWeather() {
     const APIKey = 'f7e7c4511413a8a65a994a1e3d532200';
-    const city = document.querySelector('.search-box input').value;
+    const city = searchInput.value;
 
-    if (city === '')
-        return;
+    if (city === '') return;
 
     fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${APIKey}`)
         .then(response => response.json())
         .then(json => {
-
             if (json.cod === '404') {
                 container.style.height = '400px';
                 weatherBox.style.display = 'none';
@@ -38,23 +37,18 @@ search.addEventListener('click', () => {
                 case 'Clear':
                     image.src = 'images/clear.png';
                     break;
-
                 case 'Rain':
                     image.src = 'images/rain.png';
                     break;
-
                 case 'Snow':
                     image.src = 'images/snow.png';
                     break;
-
                 case 'Clouds':
                     image.src = 'images/cloud.png';
                     break;
-
                 case 'Mist':
                     image.src = 'images/mist.png';
                     break;
-
                 default:
                     image.src = '';
             }
@@ -62,16 +56,21 @@ search.addEventListener('click', () => {
             temperature.innerHTML = `${parseInt(json.main.temp)}<span>°C</span>`;
             description.innerHTML = `${json.weather[0].description}`;
             humidity.innerHTML = `${json.main.humidity}%`;
-            wind.innerHTML = `${parseInt(json.wind.speed)} km`;
+            wind.innerHTML = `${parseInt(json.wind.speed)} km / h`;
 
             weatherBox.style.display = '';
             weatherDetails.style.display = '';
             weatherBox.classList.add('fadeIn');
             weatherDetails.classList.add('fadeIn');
             container.style.height = '590px';
-
-
         });
+}
 
+search.addEventListener('click', searchWeather);
 
+// Add event listener for Enter key press
+searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        searchWeather();
+    }
 });
