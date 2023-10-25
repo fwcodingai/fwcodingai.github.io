@@ -1,156 +1,87 @@
-const chatInput = document.querySelector("#chat-input");
-const sendButton = document.querySelector("#send-btn");
-const chatContainer = document.querySelector(".chat-container");
-const themeButton = document.querySelector("#theme-btn");
-const deleteButton = document.querySelector("#delete-btn");
+const cityInput = document.querySelector("#city-input");
+const searchButton = document.querySelector("#search-btn");
+const currentWeatherDiv = document.querySelector(".current-weather");
+const daysForecastDiv = document.querySelector(".days-forecast");
 
-let userText = null;
-const API_KEY = window.API_KEY; // Assuming you've set the API key as an environment variable
+const API_KEY = "8630fb95500e3ec17c899db66db71cd1"; // Paste your API here
 
-const loadDataFromLocalstorage = () => {
-    // Load saved chats and theme from local storage and apply/add on the page
-    const themeColor = localStorage.getItem("themeColor");
-
-    document.body.classList.toggle("light-mode", themeColor === "light_mode");
-    themeButton.innerText = document.body.classList.contains("light-mode") ? "dark_mode" : "light_mode";
-
-    const defaultText = `<div class="default-text">
-                            <h1>ChatGPT</h1>
-                            <p>Start a conversation and explore the power of AI.<br> Your chat history will be displayed here.</p>
-                        </div>`;
-
-    chatContainer.innerHTML = localStorage.getItem("all-chats") || defaultText;
-    chatContainer.scrollTo(0, chatContainer.scrollHeight); // Scroll to the bottom of the chat container
-};
-
-const createChatElement = (content, className) => {
-    // Create a new div and apply chat-specific class, and set the HTML content of the div
-    const chatDiv = document.createElement("div");
-    chatDiv.classList.add("chat", className);
-    chatDiv.innerHTML = content;
-    return chatDiv; // Return the created chat div
-};
-
-const getChatResponse = async (incomingChatDiv) => {
-    const API_URL = "https://api.openai.com/v1/completions";
-    const pElement = document.createElement("p");
-
-    // Define the properties and data for the API request
-    const requestOptions = {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${API_KEY}`
-        },
-        body: JSON.stringify({
-            model: "text-davinci-003",
-            prompt: userText,
-            max_tokens: 2048,
-            temperature: 0.2,
-            n: 1,
-            stop: null
-        })
-    };
-
-    // Send the POST request to the API, get a response, and set the response as the text content of the paragraph element
-    try {
-        const response = await (await fetch(API_URL, requestOptions)).json();
-        pElement.textContent = response.choices[0].text.trim();
-    } catch (error) {
-        // Add an error class to the paragraph element and set an error message
-        pElement.classList.add("error");
-        pElement.textContent = "Oops! Something went wrong while retrieving the response. Please try again.";
-    }
-
-    // Remove the typing animation, append the paragraph element, and save the chats to local storage
-    incomingChatDiv.querySelector(".typing-animation").remove();
-    incomingChatDiv.querySelector(".chat-details").appendChild(pElement);
-    localStorage.setItem("all-chats", chatContainer.innerHTML);
-    chatContainer.scrollTo(0, chatContainer.scrollHeight);
-};
-
-const copyResponse = (copyBtn) => {
-    // Copy the text content of the response to the clipboard
-    const responseTextElement = copyBtn.parentElement.querySelector("p");
-    navigator.clipboard.writeText(responseTextElement.textContent);
-    copyBtn.textContent = "done";
-    setTimeout(() => copyBtn.textContent = "content_copy", 1000);
-};
-
-const showTypingAnimation = () => {
-    // Display the typing animation and call the getChatResponse function
-    const html = `<div class="chat-content">
-                    <div class="chat-details">
-                        <img src="images/chatbot.jpg" alt="chatbot-img">
-                        <div class="typing-animation">
-                            <div class="typing-dot" style="--delay: 0.2s"></div>
-                            <div class="typing-dot" style="--delay: 0.3s"></div>
-                            <div class="typing-dot" style="--delay: 0.4s"></div>
+// Create weather card HTML based on weather data
+const createWeatherCard = (cityName, weatherItem, index) => {
+    if(index === 0) {
+        return `<div class="mt-3 d-flex justify-content-between">
+                    <div>
+                        <h3 class="fw-bold">${cityName} (${weatherItem.dt_txt.split(" ")[0]})</h3>
+                        <h6 class="my-3 mt-3">Temperature: ${((weatherItem.main.temp - 273.15).toFixed(2))}°C</h6>
+                        <h6 class="my-3">Wind: ${weatherItem.wind.speed} M/S</h6>
+                        <h6 class="my-3">Humidity: ${weatherItem.main.humidity}%</h6>
+                    </div>
+                    <div class="text-center me-lg-5">
+                        <img src="https://openweathermap.org/img/wn/${weatherItem.weather[0].icon}@4x.png" alt="weather icon">
+                        <h6>${weatherItem.weather[0].description}</h6>
+                    </div>
+                </div>`;
+    } else {
+        return `<div class="col mb-3">
+                    <div class="card border-0 bg-secondary text-white">
+                        <div class="card-body p-3 text-white">
+                            <h5 class="card-title fw-semibold">(${weatherItem.dt_txt.split(" ")[0]})</h5>
+                            <img src="https://openweathermap.org/img/wn/${weatherItem.weather[0].icon}.png" alt="weather icon">
+                            <h6 class="card-text my-3 mt-3">Temp: ${((weatherItem.main.temp - 273.15).toFixed(2))}°C</h6>
+                            <h6 class="card-text my-3">Wind: ${weatherItem.wind.speed} M/S</h6>
+                            <h6 class="card-text my-3">Humidity: ${weatherItem.main.humidity}%</h6>
                         </div>
                     </div>
-                    <span onclick="copyResponse(this)" class="material-symbols-rounded">content_copy</span>
                 </div>`;
-    // Create an incoming chat div with typing animation and append it to the chat container
-    const incomingChatDiv = createChatElement(html, "incoming");
-    chatContainer.appendChild(incomingChatDiv);
-    chatContainer.scrollTo(0, chatContainer.scrollHeight);
-    getChatResponse(incomingChatDiv);
-};
-
-const handleOutgoingChat = () => {
-    userText = chatInput.value.trim(); // Get chatInput value and remove extra spaces
-    if (!userText) return; // If chatInput is empty, return from here
-
-    // Clear the input field and reset its height
-    chatInput.value = "";
-    chatInput.style.height = `${initialInputHeight}px`;
-
-    const html = `<div class="chat-content">
-                    <div class="chat-details">
-                        <img src="images/user.jpg" alt="user-img">
-                        <p>${userText}</p>
-                    </div>
-                </div>`;
-
-    // Create an outgoing chat div with the user's message and append it to the chat container
-    const outgoingChatDiv = createChatElement(html, "outgoing");
-    chatContainer.querySelector(".default-text")?.remove();
-    chatContainer.appendChild(outgoingChatDiv);
-    chatContainer.scrollTo(0, chatContainer.scrollHeight);
-    setTimeout(showTypingAnimation, 500);
-};
-
-deleteButton.addEventListener("click", () => {
-    // Remove the chats from local storage and call loadDataFromLocalstorage function
-    if (confirm("Are you sure you want to delete all the chats?")) {
-        localStorage.removeItem("all-chats");
-        loadDataFromLocalstorage();
     }
-});
+}
 
-themeButton.addEventListener("click", () => {
-    // Toggle the body's class for the theme mode and save the updated theme to local storage
-    document.body.classList.toggle("light-mode");
-    localStorage.setItem("themeColor", themeButton.innerText);
-    themeButton.innerText = document.body.classList.contains("light-mode") ? "dark_mode" : "light_mode";
-});
+// Get weather details of passed latitude and longitude
+const getWeatherDetails = (cityName, latitude, longitude) => {
+    const WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
 
-const initialInputHeight = chatInput.scrollHeight;
+    fetch(WEATHER_API_URL).then(response => response.json()).then(data => {
+        const forecastArray = data.list;
+        const uniqueForecastDays = new Set();
 
-chatInput.addEventListener("input", () => {
-    // Adjust the height of the input field dynamically based on its content
-    chatInput.style.height = `${initialInputHeight}px`;
-    chatInput.style.height = `${chatInput.scrollHeight}px`;
-});
+        const fiveDaysForecast = forecastArray.filter(forecast => {
+            const forecastDate = new Date(forecast.dt_txt).getDate();
+            if (!uniqueForecastDays.has(forecastDate) && uniqueForecastDays.size < 6) {
+                uniqueForecastDays.add(forecastDate);
+                return true;
+            }
+            return false;
+        });
 
-chatInput.addEventListener("keydown", (e) => {
-    // If the Enter key is pressed without Shift and the window width is larger
-    // than 800 pixels, handle the outgoing chat
-    if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 800) {
-        e.preventDefault();
-        handleOutgoingChat();
-    }
-});
+        cityInput.value = "";
+        currentWeatherDiv.innerHTML = "";
+        daysForecastDiv.innerHTML = "";
 
-loadDataFromLocalstorage();
-sendButton.addEventListener("click", handleOutgoingChat);
+        fiveDaysForecast.forEach((weatherItem, index) => {
+            const html = createWeatherCard(cityName, weatherItem, index);
+            if (index === 0) {
+                currentWeatherDiv.insertAdjacentHTML("beforeend", html);
+            } else {
+                daysForecastDiv.insertAdjacentHTML("beforeend", html);
+            }
+        });        
+    }).catch(() => {
+        alert("An error occurred while fetching the weather forecast!");
+    });
+}
+
+// Get coordinates of entered city name
+const getCityCoordinates = () => {
+    const cityName = cityInput.value.trim();
+    if (cityName === "") return;
+    const API_URL = `https://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=${API_KEY}`;
+  
+    fetch(API_URL).then(response => response.json()).then(data => {
+        if (!data.length) return alert(`No coordinates found for ${cityName}`);
+        const { lat, lon, name } = data[0];
+        getWeatherDetails(name, lat, lon);
+    }).catch(() => {
+        alert("An error occurred while fetching the coordinates!");
+    });
+}
+
+searchButton.addEventListener("click", () => getCityCoordinates());
