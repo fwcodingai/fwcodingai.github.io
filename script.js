@@ -3,7 +3,7 @@ const zoekInvoer = document.getElementById('search');
 const weerInfo = document.getElementById('weatherInfo');
 const updateTeller = document.getElementById('updateCounter');
 
-let secondenResterend = 60; // Tijd in seconden voor de volgende update, gewijzigd naar 60 seconden
+let secondenResterend = 60;
 
 function krijgGebruikerstaal() {
     return navigator.language || 'nl-NL';
@@ -12,6 +12,8 @@ function krijgGebruikerstaal() {
 zoekInvoer.addEventListener('keyup', (gebeurtenis) => {
     if (gebeurtenis.key === 'Enter') {
         zoekWeer();
+        // Disable the Enter key after a city search
+        zoekInvoer.disabled = true;
     }
 });
 
@@ -21,7 +23,6 @@ function zoekWeer() {
 
     haalWeerOp(stad, gebruikerstaal);
 
-    // We starten het tellerinterval pas wanneer een zoekopdracht wordt geïnitieerd.
     startTellerInterval();
 }
 
@@ -35,8 +36,8 @@ function haalWeerOp(stad, gebruikerstaal) {
         })
         .then(data => {
             const beschrijving = data.weather[0].description;
-            const temperatuur = (data.main.temp - 273.15); // Temperatuur in Celsius zonder decimalen
-            const gevoelsTemperatuur = (data.main.feels_like - 273.15); // Gevoelstemperatuur in Celsius zonder decimalen
+            const temperatuur = (data.main.temp - 273.15); 
+            const gevoelsTemperatuur = (data.main.feels_like - 273.15);
             const windsnelheid = data.wind.speed;
             const windBeschrijving = krijgWindBeschrijving(windsnelheid, gebruikerstaal);
 
@@ -68,7 +69,7 @@ function updateTellerEnWeer() {
         const stad = zoekInvoer.value;
         const gebruikerstaal = krijgGebruikerstaal();
         haalWeerOp(stad, gebruikerstaal);
-        secondenResterend = 60; // Teller resetten naar 60 seconden
+        secondenResterend = 60;
     }
     updateTeller.innerText = `Volgende update over: ${Math.floor(secondenResterend / 60)} minuten en ${secondenResterend % 60} seconden`;
     secondenResterend--;
@@ -76,5 +77,11 @@ function updateTellerEnWeer() {
 
 function startTellerInterval() {
     updateTellerEnWeer();
-    setInterval(updateTellerEnWeer, 1000); // Gewijzigd om elke 1000 milliseconden (1 seconde) bij te werken
+    const intervalId = setInterval(updateTellerEnWeer, 1000);
+    
+    // Clear the interval when secondenResterend reaches 0
+    if (secondenResterend === 0) {
+        clearInterval(intervalId);
+        zoekInvoer.disabled = false; // Re-enable the input
+    }
 }
