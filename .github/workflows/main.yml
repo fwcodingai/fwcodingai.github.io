@@ -24,12 +24,12 @@ jobs:
     - name: Build
       run: npm run build  # Modify this as per your project setup
 
-    - name: Deploy to GitHub Pages
-      run: |
-        echo "Building and deploying your site..."
-        # Set the API key as an environment variable
-        export API_KEY=$API_KEY
-        # Deploy your site to GitHub Pages
-        # Example: npm run deploy or your deployment script
-      env:
-        API_KEY: ${{ secrets.API_KEY }}
+- name: Deploy to GitHub Pages
+  run: |
+    echo "Building and deploying your site..."
+    export API_KEY=$API_KEY  # Set the API key as an environment variable
+    # Deploy your site to GitHub Pages
+    # Example: npm run deploy or your deployment script
+  env:
+    API_KEY: ${{ secrets.API_KEY }}  # Access the API key from GitHub Secrets
+
