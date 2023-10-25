@@ -1,26 +1,59 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta naam="viewport" content="breedte=device-breedte, initiële-schaal=1.0">
-    <link rel="stylesheet" href="stijl.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integriteit="sha512-1ZTwaXNd0ZfDnAdqLnrEaQaIyTkvHBJNJWSz/yHPz9inEOvjZijVgHf4qwd5qQvYR8Ai9Zh0lgo4Rq3WqXrwVw==" crossorigin="anoniem" referrerpolicy="geen-verwijzer" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="weer.ico" />
     <title>Weerbericht</title>
-	<link rel="icon" type="image/x-icon" href="weer.ico" />
 </head>
+
 <body>
+
     <div class="container">
-        <h1>Weerbericht</h1>
-        <p>Vernieuw de pagina om een nieuwe stad te zoeken.</p> <!-- Add this line for the message -->
-        <div class="search-container">
-            <input type="text" id="search" placeholder="Voer een stad in (Druk op Enter)" size="30">
+        <div class="search-box">
+            <i class="fa-solid fa-location-dot"></i>
+            <input type="text" placeholder="Enter your location">
+            <button class="fa-solid fa-magnifying-glass"></button>
         </div>
 
-        <div id="weatherInfo" class="weather-info">
-            <!-- Weergave van weergegevens komt hier -->
+        <div class="not-found">
+            <img src="images/404.png">
+            <p>Oops! Invalid location :/</p>
         </div>
-        <div id="updateCounter" class="update-counter"></div> <!-- Element voor de counter -->
+
+        <div class="weather-box">
+            <img src="">
+            <p class="temperature"></p>
+            <p class="description"></p>
+        </div>
+
+        <div class="weather-details">
+            <div class="humidity">
+                <i class="fa-solid fa-water"></i>
+                <div class="text">
+                    <span></span>
+                    <p>Humidity</p>
+                </div>
+            </div>
+            <div class="wind">
+                <i class="fa-solid fa-wind"></i>
+                <div class="text">
+                    <span></span>
+                    <p>Wind Speed</p>
+                </div>
+            </div>
+        </div>
+
     </div>
-    <script src="script.js"></script>
+
+    <script src="https://kit.fontawesome.com/7c8801c017.js" crossorigin="anonymous"></script>
+    <script src="index.js"></script>
 </body>
+
 </html>
